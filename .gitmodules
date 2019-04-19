@@ -1,0 +1,3 @@
+[submodule "iAnnotateSV"]
+	path = iAnnotateSV
+	url = git@github.com:rhshah/iAnnotateSV.git
