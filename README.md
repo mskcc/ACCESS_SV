@@ -4,7 +4,9 @@ SV calling scripts for ACCESS
 
 ## Installation
 
-Recursively git clone for [iAnnotateSV](https://github.com/rhshah/iAnnotateSV) submodule within this repository. 
+### Git setup
+
+Recursively git clone for [iAnnotateSV](https://github.com/rhshah/iAnnotateSV) submodule within this repository.
 
 
 ```bash
@@ -15,21 +17,32 @@ You might need [git-lfs](https://git-lfs.github.com/)
 
 ```bash
 wget https://github.com/git-lfs/git-lfs/releases/download/v2.7.1/git-lfs-linux-amd64-v2.7.1.tar.gz
+tar -xvf git-lfs-darwin-amd64-v2.7.1.tar.gz
 cd git-lfs-1.2.0
 ./git-lfs install
 ```
+### Manta setup
+
+Refer to [Manta Github](https://github.com/Illumina/manta/releases) for the latest releases
+
+```bash
+wget https://github.com/Illumina/manta/releases/download/v1.5.0/manta-1.5.0.centos6_x86_64.tar.bz2
+tar -xvf manta-1.5.0.centos6_x86_64.tar.bz2
+cd manta-1.5.0.centos6_x86_64 
+```
+
 
 ## Usage
 
 ### Step 1: Manta
 
 ```bash
-Rscript manta_sample.R 
+Rscript manta_sample.R
 usage: manta_sample.R [-h] [-t TUMOR] [-n NORMAL] [-o OUTPUT] [-f FASTA]
                       [-m MANTA]
 
 optional arguments:
-  -h, --help            
+  -h, --help
                         show this help message and exit
   -t TUMOR, --tumor TUMOR
                         Tumor bam for SV calling
@@ -51,7 +64,7 @@ bash iAnnotateSV.sh $1 $2 $3 $4 $5
 vcf_gz=$1
 # sample name
 prefix=$2
-# output directory 
+# output directory
 outdir=$3
 # manta directory
 mantadir=$4

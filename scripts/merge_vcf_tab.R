@@ -74,7 +74,7 @@ if (!interactive()) {
                          by = c('chr1','pos1','chr2','pos2','Connection_Type','SV_LENGTH','SV_Type','BrkptType'),all = T,suffixes = c('.nomal','.tumor')) %>%
       merge(tab.data,by = c('chr1','pos1','chr2','pos2'),all = T) %>% rowwise %>% 
       mutate(TumorId = tumor.ID,NormalId = normal.ID,`Sign out` = ifelse(gene1 %in% gene.list | gene2 %in% gene.list,'Y','N')) %>%
-      select(TumorId,NormalId,`Sign out`)
+      select(TumorId,NormalId,`Sign out`) %>%
       data.table()
   }
   write.table(output.data,output.filename,sep = '\t',quote = F,row.names = F)
