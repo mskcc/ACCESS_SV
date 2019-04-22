@@ -1,13 +1,22 @@
 # ACCESS_SV
 
-SV calling scripts for ACESS
+SV calling scripts for ACCESS
 
 ## Installation
 
-Recursively git clone for [iAnnotateSV](https://github.com/rhshah/iAnnotateSV) submodule within this repository.
+Recursively git clone for [iAnnotateSV](https://github.com/rhshah/iAnnotateSV) submodule within this repository. 
+
 
 ```bash
 git clone --recursive https://github.com/mskcc/ACCESS_SV.git
+```
+
+You might need [git-lfs](https://git-lfs.github.com/)
+
+```bash
+wget https://github.com/git-lfs/git-lfs/releases/download/v2.7.1/git-lfs-linux-amd64-v2.7.1.tar.gz
+cd git-lfs-1.2.0
+./git-lfs install
 ```
 
 ## Usage
