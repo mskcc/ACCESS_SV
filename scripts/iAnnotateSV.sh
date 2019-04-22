@@ -7,14 +7,16 @@ vcf_gz=$1
 prefix=$2
 # 'output directory'
 outdir=$3
-# 'resource files for iannotatesv'
-resourcedir=$4
-# iannotateSV directory /ifs/work/bergerm1/zhengy1/RET_all/IannotateSV_testing/iAnnotateSV
-iasvdir=$5
 # manta directory 
-mantadir=$6
+mantadir=$4
 # fasta reference
-fasta=$7
+fasta=$5
+
+gitdir=`echo $BASEDIR | sed 's,/scripts$,,g'`
+# 'resource files for iannotatesv'
+resourcedir="${gitdir}/data"
+# iannotateSV directory /ifs/work/bergerm1/zhengy1/RET_all/IannotateSV_testing/iAnnotateSV
+iasvdir="${gitdir}/iAnnotateSV"
 
 # get rid of end '/' in directories
 outdir=`echo $outdir | sed -r 's,/$,,g'`
