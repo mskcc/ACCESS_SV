@@ -43,13 +43,13 @@ if (!interactive()) {
       mutate(INFO = paste0(INFO,';CT=',CT,';',CHR2,';',END)) %>% data.table() -> vcf.data
     # rows with GLxxxxx as chromosome
     row.to.del <- c(grep('GL',vcf.data$CHROM),grep('GL',vcf.data$CHROM.mate))
+    vcf.data <- vcf.data %>% select(-c(EventType,CT,BND_CT,CHROM.mate,mate.ID,POS.mate,END,CHR2)) %>% data.table()
     if(length(row.to.del) > 0){
       vcf.file@fix <- as.matrix(vcf.data[-row.to.del,])
       vcf.file@gt <- as.matrix(data.table(vcf.file@gt)[-row.to.del,])
     }else{
       vcf.file@fix <- as.matrix(vcf.data)
     }
-    vcf.data <- vcf.data %>% select(-c(EventType,CT,BND_CT,CHROM.mate,mate.ID,POS.mate,END,CHR2)) %>% data.table()
     
     if(any(grepl('CT=NA',vcf.data$INFO))){
       warning(paste0('there are unknown connection type in this vcf file -- ',vcf.filenames))

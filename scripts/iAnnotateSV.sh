@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #MUST BE TUMOR NORMAL PAIRED CALLING
 BASEDIR=$(dirname "$0")
 
