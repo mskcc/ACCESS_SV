@@ -18,7 +18,7 @@ You might need [git-lfs](https://git-lfs.github.com/)
 ```bash
 wget https://github.com/git-lfs/git-lfs/releases/download/v2.7.1/git-lfs-linux-amd64-v2.7.1.tar.gz
 tar -xvf git-lfs-darwin-amd64-v2.7.1.tar.gz
-cd git-lfs-1.2.0
+cd git-lfs-2.7.1
 ./git-lfs install
 ```
 ### Manta setup
