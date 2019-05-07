@@ -28,15 +28,15 @@ if (!interactive()) {
   output.filename = args$output
   prefix = args$prefix
   # vcf.filenames <- '/ifs/work/bergerm1/RNAseq/Analysis/manta/run_030619/vcf_dir/Sample_P-0013196-T04-RNAS_IGO_05500_FO_1rnaSV.vcf'
-  # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Analysis_files/manta_021919/vcf_ct_inv/C-001440-L001-dsomaticSV.vcf'
-  # tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/test_sample_Annotated.txt'
-  # output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test_sample_Annotated_Evidence.txt'
+  vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test/somaticSV_inv_corrected_edited.vcf'
+  tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test/C-02WK6K-L001-d_Annotated.txt'
+  output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test/C-02WK6K-L001-d_Annotated_Evidence.txt'
   tab.data <- fread(tab.filenames) %>% mutate(chr1 = as.character(chr1),pos1 = as.numeric(pos1),chr2 = as.character(chr2),pos2 = as.numeric(pos2)) %>% data.table()
   vcf.file <- read.vcfR(vcf.filenames,verbose = F)
   vcf.data <- data.table(vcf.file@fix)
   gene.list <- c('ALK','BRAF','ERBB2','EGFR','FGFR1','FGFR2','FGFR3','KIT','MET','NTRK1','NTRK2','NTRK3','PDGFRA','RET','ROS1')
   if(nrow(vcf.data)== 0){
-    output.data <- data.frame(matrix(nrow = 0,ncol = 31))
+    output.data <- data.frame(matrix(nrow = 0,ncol = 37))
     colnames(output.data) = c('chr1','pos1','chr2','pos2','Connection_Type','SV_LENGTH','SV_Type','BrkptType','PairedEndSupport.nomal',
                               'PairedEndRef.nomal','SplitReadSupport.nomal','SplitReadRef.nomal','PairedEndSupport.tumor',
                               'PairedEndRef.tumor','SplitReadSupport.tumor','SplitReadRef.tumor','str1','str2','gene1',
@@ -74,7 +74,7 @@ if (!interactive()) {
                          by = c('chr1','pos1','chr2','pos2','Connection_Type','SV_LENGTH','SV_Type','BrkptType'),all = T,suffixes = c('.nomal','.tumor')) %>%
       merge(tab.data,by = c('chr1','pos1','chr2','pos2'),all = T) %>% rowwise %>% 
       mutate(TumorId = tumor.ID,NormalId = normal.ID,`Sign out` = ifelse(gene1 %in% gene.list | gene2 %in% gene.list,'Y','N')) %>%
-      select(TumorId,NormalId,`Sign out`) %>%
+      select(TumorId,NormalId,`Sign out`,everything()) %>%
       data.table()
   }
   write.table(output.data,output.filename,sep = '\t',quote = F,row.names = F)
