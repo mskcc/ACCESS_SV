@@ -67,7 +67,7 @@ Rscript "${BASEDIR}/merge_vcf_tab.R" -t $annot_txt \
 	-v $edited_vcf -o $annot_output
 
 echo 'Adding DMP IMPACT fusion frequency'
-java -server -Xms4g -Xmx4g -cp /home/patelju1/software/BioinfoUtils-1.0.0.jar \
+java -server -Xms4g -Xmx4g -cp "${BASEDIR}/BioinfoUtils-1.0.0.jar" \
 	org.mskcc.juber.commands.AnnotateSVResults \
 	$annot_output \
 	"${resourcedir}/dmp-intragenic-white-list.txt" \
