@@ -1,7 +1,9 @@
 #!/bin/bash
 
 #MUST BE TUMOR NORMAL PAIRED CALLING
-BASEDIR=$(dirname "$0")
+#BASEDIR=$(dirname "$0")
+BASEDIR=$(readlink -f "$0")
+BASEDIR=`echo $BASEDIR | sed 's,/iAnnotateSV.sh,,g'`
 
 #'somatic.vcf.gz from manta output'
 vcf_gz=$1
@@ -14,6 +16,7 @@ mantadir=$4
 # fasta reference
 fasta=$5
 
+echo $BASEDIR
 gitdir=`echo $BASEDIR | sed 's,/scripts$,,g'`
 # 'resource files for iannotatesv'
 resourcedir="${gitdir}/data"
@@ -62,6 +65,13 @@ annot_output=`echo $annot_txt | sed -r 's,_Annotated.txt,_Annotated_Evidence.txt
 echo 'Merging vcf and iAnnotateSV output'
 Rscript "${BASEDIR}/merge_vcf_tab.R" -t $annot_txt \
 	-v $edited_vcf -o $annot_output
+
+echo 'Adding DMP IMPACT fusion frequency'
+java -server -Xms4g -Xmx4g -cp /home/patelju1/software/BioinfoUtils-1.0.0.jar \
+	org.mskcc.juber.commands.AnnotateSVResults \
+	$annot_output \
+	"${resourcedir}/dmp-intragenic-white-list.txt" \
+	"${resourcedir}/dmp-intergenic-white-list.txt"
 
 
 # from config file	
