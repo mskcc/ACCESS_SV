@@ -15,6 +15,9 @@ outdir=$3
 mantadir=$4
 # fasta reference
 fasta=$5
+# python version
+python=$6
+
 
 echo $BASEDIR
 gitdir=`echo $BASEDIR | sed 's,/scripts$,,g'`
@@ -42,7 +45,7 @@ Rscript "${BASEDIR}/vcf_ct_edits.R" \
   -v $vcf_input -o $edited_vcf
 
 echo 'Converting manta VCF into tab file for iAnnotateSV'
-python "${BASEDIR}/manta_vcf2tab.py" \
+$python "${BASEDIR}/manta_vcf2tab.py" \
 	-i $edited_vcf -o $outdir
 
 tab_txt="$outdir/`echo $edited_vcf | sed -r 's,.*./,,g' | sed -r 's,.vcf,.tab,g'`"
@@ -50,7 +53,7 @@ echo $tab_txt
 echo 'Running iAnnotateSV'
 # python "${BASEDIR}/iAnnotateSV.py" \
 #python /home/shahr2/git/iAnnotateSV/iAnnotateSV/iAnnotateSV.py \
-python "${iasvdir}/iAnnotateSV/iAnnotateSV.py" \
+$python "${iasvdir}/iAnnotateSV/iAnnotateSV.py" \
 	-r hg19 -d 3000 -i $tab_txt -ofp $prefix -o $outdir \
 	-c "${resourcedir}/canonical_transcripts_cv5.txt" \
 	-u "${resourcedir}/hg19.uniprot.spAnnot.table.txt" \
