@@ -65,6 +65,7 @@ if (!interactive()) {
                                                                                      as.numeric(gsub('SVLEN=|;','',str_extract(INFO,'SVLEN=[0-9]+;|SVLEN=-[0-9]+;'))),0),
                                                                   SV_Type = gsub('SVTYPE=|;','',str_extract(INFO,'SVTYPE=[A-Z]+;')),INFO
                                                                   )]) %>%
+      mutate(SV_Type = ifelse(SV_Type == 'BND','TRA',SV_Type)) %>%
       mutate(BrkptType = ifelse(grepl('IMPRECISE',INFO),'IMPRECISE',ifelse(grepl('SR',FORMAT),'PRECISE','IMPRECISE'))) %>% select(-INFO) %>% data.table()
     normal.ID <- colnames(vcf.genotype)[2]
     tumor.ID <- colnames(vcf.genotype)[3]
