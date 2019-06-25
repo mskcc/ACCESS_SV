@@ -28,9 +28,9 @@ if (!interactive()) {
   output.filename = args$output
   prefix = args$prefix
   # vcf.filenames <- '/ifs/work/bergerm1/RNAseq/Analysis/manta/run_030619/vcf_dir/Sample_P-0013196-T04-RNAS_IGO_05500_FO_1rnaSV.vcf'
-  vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/somaticSV_inv_corrected_edited.vcf'
-  tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated.txt'
-  output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated_Evidence.txt'
+  # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/somaticSV_inv_corrected_edited.vcf'
+  # tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated.txt'
+  # output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated_Evidence.txt'
   tab.data <- fread(tab.filenames) %>% mutate(chr1 = as.character(chr1),pos1 = as.numeric(pos1),chr2 = as.character(chr2),pos2 = as.numeric(pos2)) %>% data.table()
   vcf.file <- read.vcfR(vcf.filenames,verbose = F)
   vcf.data <- data.table(vcf.file@fix)
