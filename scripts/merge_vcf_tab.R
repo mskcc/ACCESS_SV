@@ -28,13 +28,22 @@ if (!interactive()) {
   output.filename = args$output
   prefix = args$prefix
   # vcf.filenames <- '/ifs/work/bergerm1/RNAseq/Analysis/manta/run_030619/vcf_dir/Sample_P-0013196-T04-RNAS_IGO_05500_FO_1rnaSV.vcf'
-  # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/somaticSV_inv_corrected_edited.vcf'
-  # tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated.txt'
-  # output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated_Evidence.txt'
+  vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/somaticSV_inv_corrected_edited.vcf'
+  tab.filenames = '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated.txt'
+  output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/test/SV_Test_pos/C-EFFWHC-L001-d_Annotated_Evidence.txt'
   tab.data <- fread(tab.filenames) %>% mutate(chr1 = as.character(chr1),pos1 = as.numeric(pos1),chr2 = as.character(chr2),pos2 = as.numeric(pos2)) %>% data.table()
   vcf.file <- read.vcfR(vcf.filenames,verbose = F)
   vcf.data <- data.table(vcf.file@fix)
   gene.list <- c('ALK','BRAF','ERBB2','EGFR','FGFR1','FGFR2','FGFR3','KIT','MET','NTRK1','NTRK2','NTRK3','PDGFRA','RET','ROS1')
+  access.gene.list <- c('AKT1','ALK','APC','AR','ARAF','ARID1A','ARID2','ATM','B2M','BCL2','BCOR','BRAF','BRCA1','BRCA2','CARD11','CBFB',
+                        'CCND1','CDH1','CDK4','CDKN2A','CIC','CREBBP','CTCF','CTNNB1','DICER1','DIS3','DNMT3A','EGFR','EIF1AX','EP300','ERBB2',
+                        'ERBB3','ERCC2','ESR1','ETV6','EZH2','FBXW7','FGFR1','FGFR2','FGFR3','FGFR4','FLT3','FOXA1','FOXL2','FOXO1','FUBP1','GATA3',
+                        'GNA11','GNAQ','GNAS','H3F3A','HIST1H3B','HRAS','IDH1','IDH2','IKZF1','INPPL1','JAK1','KDM6A','KEAP1','KIT','KNSTRN','KRAS',
+                        'MAP2K1','MAPK1','MAX','MDM2','MED12','MET','MLH1','MSH2','MSH3','MSH6','MTOR','MYC','MYCN','MYD88','MYOD1','NF1','NFE2L2',
+                        'NOTCH1','NRAS','NTRK1','NTRK2','NTRK3','NUP93','PAK7','PDGFRA','PIK3CA','PIK3CB','PIK3R1','PIK3R2','PMS2','POLE','PPP2R1A',
+                        'PPP6C','PRKCI','PTCH1','PTEN','PTPN11','RAC1','RAF1','RB1','RET','RHOA','RIT1','ROS1','RRAS2','RXRA','SETD2','SF3B1','SMAD3',
+                        'SMAD4','SMARCA4','SMARCB1','SOS1','SPOP','STAT3','STK11','STK19','TCF7L2','TERT','TGFBR1','TGFBR2','TP53','TP63','TSC1','TSC2',
+                        'U2AF1','VHL','XPO1')
   if(nrow(vcf.data)== 0){
     dummy.colnames <- c('TumorId','NormalId','Chr1','Pos1','Chr2','Pos2','SV_Type','Gene1','Gene2',
                         'Transcript1','Transcript2','Site1Description','Site2Description','Fusion',
@@ -104,7 +113,8 @@ if (!interactive()) {
              NormalSplitReferenceCount,NormalVariantCount,NormalSplitVariantCount,NormalReadCount,
              NormalGenotypeQScore,Cosmic_Fusion_Counts,`repName-repClass-repFamily:-site1`,`repName-repClass-repFamily:-site2`,
              CC_Chr_Band,`CC_Tumour_Types(Somatic)`,CC_Cancer_Syndrome,CC_Mutation_Type,CC_Translocation_Partner,
-             `DGv_Name-DGv_VarType-site1`,`DGv_Name-DGv_VarType-site2`,Significance) %>% data.table()
+             `DGv_Name-DGv_VarType-site1`,`DGv_Name-DGv_VarType-site2`,Significance) %>%
+      filter(Gene1 %in% access.gene.list | Gene2 %in% access.gene.list) %>% data.table()
     
   }
   write.table(output.data,output.filename,sep = '\t',quote = F,row.names = F)
