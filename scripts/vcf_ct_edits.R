@@ -31,11 +31,13 @@ if (!interactive()) {
                                                             ifelse(grepl('\\].*.\\].*',ALT),']p]t',
                                                                    ifelse(grepl('\\[.*.\\[.*',ALT),'[p[t',NA)))))] %>% rowwise %>%
       # delection insertion duplication always 5 to 3
-      mutate(CT = ifelse(EventType %in% c('DEL','INS','DUP'),'5to3',
-                         # inversion either 3to3 or 5to5 (use INV3/5 tag in INFO)
-                         ifelse(EventType == 'INV',ifelse(grepl('INV3',INFO),'3to3','5to5'),
-                                # mapping of translocation event type
-                                ifelse(EventType == 'BND',CT.vector[[BND_CT]],'NA'))),
+      mutate(CT = ifelse(EventType %in% c('INS','DUP'),'5to3',
+                         ifelse(EventType == 'DEL','3to5',
+                                # inversion either 3to3 or 5to5 (use INV3/5 tag in INFO)
+                                ifelse(EventType == 'INV',ifelse(grepl('INV3',INFO),'3to3','5to5'),
+                                       # mapping of translocation event type
+                                       ifelse(EventType == 'BND',CT.vector[[BND_CT]],'NA')))
+                         ),
              # extract mate chr and end pos
              mate.ID = gsub('MATEID=|;','',str_extract(INFO,'MATEID=Manta...:[0-9:]+;'))) %>%
       merge(vcf.data[,.(CHROM,POS,ID)],by.x = 'mate.ID',by.y = 'ID',all.x = T,suffixes = c('','.mate'))  %>%
