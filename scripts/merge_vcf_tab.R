@@ -114,7 +114,8 @@ if (!interactive()) {
              NormalGenotypeQScore,Cosmic_Fusion_Counts,`repName-repClass-repFamily:-site1`,`repName-repClass-repFamily:-site2`,
              CC_Chr_Band,`CC_Tumour_Types(Somatic)`,CC_Cancer_Syndrome,CC_Mutation_Type,CC_Translocation_Partner,
              `DGv_Name-DGv_VarType-site1`,`DGv_Name-DGv_VarType-site2`,Significance) %>%
-      filter(Gene1 %in% access.gene.list | Gene2 %in% access.gene.list) %>% data.table()
+      filter(Gene1 %in% access.gene.list | Gene2 %in% access.gene.list) %>% 
+      filter(Chr1 != 'MT' & Chr2 != 'MT' & !(SV_Type != 'TRA' & abs(SV_LENGTH) < 500)) %>% data.table()
     
   }
   write.table(output.data,output.filename,sep = '\t',quote = F,row.names = F)
