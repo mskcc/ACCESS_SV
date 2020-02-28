@@ -67,7 +67,7 @@ if (!interactive()) {
       vcf.file@gt <- as.matrix(data.table(vcf.file@gt)[-row.to.del,])
     }
     vcf.genotype <- data.table(vcf.file@gt) %>% cbind(vcf.data[,.(chr1 = CHROM,pos1 = as.numeric(POS),
-                                                                  chr2 = gsub('CHR2=|;','',str_extract(INFO,'CHR2=[0-9XYM]+;')),
+                                                                  chr2 = gsub('CHR2=|;','',str_extract(INFO,'CHR2=[0-9XYMT]+;')),
                                                                   pos2 = as.numeric(gsub('END=|;','',str_extract(INFO,'END=[0-9]+;|END=[0-9]+$'))),
                                                                   Connection_Type = gsub('CT=|;','',str_extract(INFO,'CT=[0-9]to[0-9];')),
                                                                   SV_LENGTH = ifelse(grepl('SVLEN',INFO),

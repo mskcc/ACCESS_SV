@@ -15,8 +15,9 @@ if (!interactive()) {
   args=parser$parse_args()
   
   vcf.filenames = args$vcf
-  # only write gz vcf for some reson.....
-  output.filename = paste0(args$output,'.gz')
+  # this library writes objects of class vcfR to *.vcf.gz format only.
+  output.filename = args$output
+  output.filename.gzipped = paste0(output.filename, '.gz')
   # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Analysis_files/manta_021919/vcf_inv_corrected_dir/C-M916LH-L001-dsomaticSV.vcf'
   # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Analysis_files/manta_021919/vcf_inv_corrected_dir/C-001440-L001-dsomaticSV.vcf'
   # output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/tmp.vcf.gz'
@@ -46,19 +47,28 @@ if (!interactive()) {
     # rows with GLxxxxx as chromosome
     row.to.del <- c(grep('GL',vcf.data$CHROM),grep('GL',vcf.data$CHROM.mate))
     vcf.data <- vcf.data %>% select(-c(EventType,CT,BND_CT,CHROM.mate,mate.ID,POS.mate,END,CHR2)) %>% data.table()
-    if(length(row.to.del) > 0){
-      vcf.file@fix <- as.matrix(vcf.data[-row.to.del,])
-      vcf.file@gt <- as.matrix(data.table(vcf.file@gt)[-row.to.del,])
-    }else{
-      vcf.file@fix <- as.matrix(vcf.data)
+    if(length(row.to.del) == nrow(vcf.data)) {
+	    temp_vcf <- readLines(vcf.filenames)
+	    nth.row <- length(vcf.file@meta)+1
+	    fileHandle <- file(output.filename)
+	    writeLines(temp_vcf[1:121], fileHandle)
+	    close(fileHandle)
     }
-    
-    if(any(grepl('CT=NA',vcf.data$INFO))){
-      warning(paste0('there are unknown connection type in this vcf file -- ',vcf.filenames))
+    else {
+	if(length(row.to.del) > 0){
+      	    vcf.file@fix <- as.matrix(vcf.data[-row.to.del,])
+	    vcf.file@gt <- as.matrix(data.table(vcf.file@gt)[-row.to.del,])
+    	}else{
+            vcf.file@fix <- as.matrix(vcf.data)
+   	}
+
+    	if(any(grepl('CT=NA',vcf.data$INFO))){
+      		warning(paste0('there are unknown connection type in this vcf file -- ',vcf.filenames))
+    	}
+  	write.vcf(x = vcf.file, file = output.filename.gzipped)
+	# process and discard gz file
+	system(paste0('zcat ', output.filename.gzipped, ' > ', output.filename))
+	unlink(output.filename.gzipped)
     }
   }
-  write.vcf(x = vcf.file,file = output.filename)
-  # process and discard gz file
-  system(paste0('zcat ',output.filename,' > ',gsub('.gz$','',output.filename)))
-  unlink(output.filename)
 }

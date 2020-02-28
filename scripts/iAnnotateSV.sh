@@ -17,7 +17,8 @@ mantadir=$4
 fasta=$5
 # python version
 python=$6
-
+# java version
+JAVA=$7
 
 echo $BASEDIR
 gitdir=`echo $BASEDIR | sed 's,/scripts$,,g'`
@@ -70,7 +71,7 @@ Rscript "${BASEDIR}/merge_vcf_tab.R" -t $annot_txt \
 	-v $edited_vcf -o $annot_output
 
 echo 'Adding DMP IMPACT fusion frequency'
-java -server -Xms4g -Xmx4g -cp "${BASEDIR}/BioinfoUtils-1.0.0.jar" \
+$JAVA -server -Xms4g -Xmx4g -cp "${BASEDIR}/BioinfoUtils-1.0.0.jar" \
 	org.mskcc.juber.commands.AnnotateSVResults \
 	$annot_output \
 	"${resourcedir}/dmp-intragenic-white-list.txt" \
