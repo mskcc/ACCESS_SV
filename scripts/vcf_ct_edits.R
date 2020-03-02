@@ -18,11 +18,9 @@ if (!interactive()) {
   # this library writes objects of class vcfR to *.vcf.gz format only.
   output.filename = args$output
   output.filename.gzipped = paste0(output.filename, '.gz')
-  # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Analysis_files/manta_021919/vcf_inv_corrected_dir/C-M916LH-L001-dsomaticSV.vcf'
-  # vcf.filenames <- '/ifs/work/bergerm1/zhengy1/RET_all/Analysis_files/manta_021919/vcf_inv_corrected_dir/C-001440-L001-dsomaticSV.vcf'
-  # output.filename <- '/ifs/work/bergerm1/zhengy1/RET_all/Code/tmp.vcf.gz'
   vcf.file <- read.vcfR(vcf.filenames,verbose = F)
   vcf.data <- data.table(vcf.file@fix)
+  # if the input vcf has one or more variants
   if(nrow(vcf.data) > 0){
     # mapping of read directions to alt annotation
     CT.vector <- structure(c('5to3','3to3','3to5','5to5'),names = c('t[p[','t]p]',']p]t','[p[t'))
@@ -47,13 +45,22 @@ if (!interactive()) {
     # rows with GLxxxxx as chromosome
     row.to.del <- c(grep('GL',vcf.data$CHROM),grep('GL',vcf.data$CHROM.mate))
     vcf.data <- vcf.data %>% select(-c(EventType,CT,BND_CT,CHROM.mate,mate.ID,POS.mate,END,CHR2)) %>% data.table()
+    
+    # if none of the variants belong to autosomes or sex chromosome,
+    #  remove the variants and manually write the vcf header to output vcf file.
+    #  This is because an empty matrix cannot be assigned to vcf.file@gt at line
+    #  `vcf.file@fix <- as.matrix(vcf.data[-row.to.del,])`
     if(length(row.to.del) == nrow(vcf.data)) {
 	    temp_vcf <- readLines(vcf.filenames)
 	    nth.row <- length(vcf.file@meta)+1
 	    fileHandle <- file(output.filename)
-	    writeLines(temp_vcf[1:121], fileHandle)
+	    writeLines(temp_vcf[1:nth.row], fileHandle)
 	    close(fileHandle)
+	    # Quit proccess after manually writing the output vcf file
+	    quit(status=0, save="no")
     }
+    # if there are variants left after removing non-autosomes and non-sex_chromosome
+    #  variants, proceed with using vcfR methods for writing output
     else {
 	if(length(row.to.del) > 0){
       	    vcf.file@fix <- as.matrix(vcf.data[-row.to.del,])
@@ -65,10 +72,12 @@ if (!interactive()) {
     	if(any(grepl('CT=NA',vcf.data$INFO))){
       		warning(paste0('there are unknown connection type in this vcf file -- ',vcf.filenames))
     	}
-  	write.vcf(x = vcf.file, file = output.filename.gzipped)
-	# process and discard gz file
-	system(paste0('zcat ', output.filename.gzipped, ' > ', output.filename))
-	unlink(output.filename.gzipped)
     }
   }
+
+  # Finally write the output vcf and unzip it
+  write.vcf(x = vcf.file, file = output.filename.gzipped)
+  # process and discard gz file
+  system(paste0('zcat ', output.filename.gzipped, ' > ', output.filename))
+  unlink(output.filename.gzipped)
 }
