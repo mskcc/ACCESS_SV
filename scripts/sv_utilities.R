@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 suppressPackageStartupMessages({
   library(data.table)
   library(argparse)
@@ -28,6 +30,10 @@ resolve_breakpoint = function(x) {
 }
 
 check_columns = function(sv.dt) {
+  #' resolve_breakpoint takes a description of a breakpoint of an SV annotated by iAnnotateSV and extracts the region information
+  #' @param x (character) iAnnotateSV description of a breakpoint
+  #' @return region information of the breakpoint. Example, exon 7, intro 5, 5-UTR
+  #' 
   sv.dt = tryCatch({
     return(sv.dt[, c("EventInfo", "Gene1", "Gene2", 
                      "EventType", "Gene1desc", "Gene2desc")])
@@ -47,6 +53,9 @@ check_columns = function(sv.dt) {
 }
 
 intermediary_columns = function(sv.dt) {
+  #' resolve_breakpoint takes a description of a breakpoint of an SV annotated by iAnnotateSV and extracts the region information
+  #' @param x (character) iAnnotateSV description of a breakpoint
+  #' @return region information of the breakpoint. Example, exon 7, intro 5, 5-UTR
   sv.dt = check_columns(sv.dt)
   sv.dt[, "EVENT" := ifelse(
     grepl("protein fusion", tolower(EventInfo)), "FUSION", ifelse(
@@ -76,7 +85,10 @@ intermediary_columns = function(sv.dt) {
 #############
 
 make_reference_data = function(
-  CohortSVs.f, write.summary=NULL) {
+  raw.cohort.data.f, write.summary=NULL) {
+  if(is.null(raw.cohort.data.f)) {
+    stop("Required raw.cohort.data.f argument not defined.")
+  }
   CohortSVs = as.data.table(read.csv(
     CohortSVs.f, sep="\t", header=T, colClasses = "character"))
   
@@ -87,28 +99,6 @@ make_reference_data = function(
     "Gene2desc", "EventInfo")])
   
   CohortSVs = intermediary_columns(CohortSVs)
-  
-  # signedout_svs[, "EVENT" := ifelse(
-  #   grepl("protein fusion", tolower(EventInfo)), "FUSION", ifelse(
-  #     Gene1 == Gene2, "INTRAGENIC", "INTERGENIC")), by=1:NROW(signedout_svs)]
-  # 
-  # signedout_svs[, c("GENE1", "GENE2", "SV_GENES") := list(
-  #   ifelse(grepl("TRA", EventType), Gene2, Gene1),
-  #   ifelse(grepl("TRA", EventType), Gene1, Gene2),
-  #   ifelse(Event == "FUSION", sub(".*\\((.*)\\).*", "\\1", EventInfo), 
-  #          ifelse(Event == "INTRAGENIC", Gene1, 
-  #                 ifelse(grepl("TRA", EventType), 
-  #                        paste0(Gene2, "-", Gene1),
-  #                        paste0(Gene1, "-", Gene2))))),
-  #   by=1:NROW(signedout_svs)]
-  # 
-  # signedout_svs[, c("BKP1", "BKP2") := list(
-  #   ifelse(grepl("TRA", EventType), 
-  #          resolve_breakpoint(Gene2desc), resolve_breakpoint(Gene1desc)), 
-  #   ifelse(grepl("TRA", EventType),
-  #          resolve_breakpoint(Gene1desc), resolve_breakpoint(Gene2desc))),
-  #          by=1:NROW(signedout_svs)]
-  
   CohortSVs = CohortSVs[!(SV_GENES == ""),]
   CohortSVs[, "GENERAL_COUNT" := .N, by=c("SV_GENES")]
   CohortSVs[, "SPECIFIC_COUNT" := .N, by=c("GENE1", "BKP1", "GENE2", "BKP2")]
@@ -182,4 +172,34 @@ annotate_sv_count = function(
   write.table(sv.data, args.sv_output, sep = "\t", row.names = F,
               col.names = T, quote = F, na = "")
 }
+
+if (!interactive()) {
+  parser$add_argument('-a', '--annotate-file', type='character', default=NULL, help='file name of structural variants that needs to be annotated with occurrence count')
+  parser$add_argument('-o', '--outfile', type='character', default=NULL,
+                      help='Name of the output file. If none provided, the input file will be over-written')
+  parser$add_argument('-c', '--occurrence-count', type='character', default=NULL,
+                      help='Occurrence count data file')
+  parser$add_argument('-r', '--raw-cohort-data', type='character', default=NULL,
+                      help='raw cohort file that should be used to generate occurrence count data')
+  parser$add_argument('-g', '--generate-occ-count-data', action="store_true", default = TRUE,
+                      help = 'Generate occurrence data. If false, annotate new data')
+  
+  args=parser$parse_args()
+  
+  annotate.f = args$annotate_file
+  output.f = annotate.f
+  if(!is.null(args$outfile)) {
+    output.f = args$outfile
+  }
+  occurrence.count.f = args$occurrence_count
+  raw.cohort.data.f = args$raw_cohort_data
+  
+  if(args$generate_occ_count_data) {
+    make_reference_data(raw.cohort.data.f, occurrence.count.f)
+  }
+  else {
+   annotate_sv_count(annotate.f, occurrence.count.f, raw.cohort.data.f)
+  }
+}
+  
   
