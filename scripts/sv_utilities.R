@@ -85,7 +85,7 @@ intermediary_columns = function(sv.dt) {
 #############
 
 make_reference_data = function(
-  raw.cohort.data.f, write.summary=NULL) {
+  CohortSVs.f, write.summary=NULL) {
   if(is.null(raw.cohort.data.f)) {
     stop("Required raw.cohort.data.f argument not defined.")
   }
@@ -115,23 +115,21 @@ make_reference_data = function(
 }
 
 annotate_sv_count = function(
-  sv.data.f, summary.data.f=NULL, raw.data.f=NULL, write.summary=NULL) {
+  sv.data.f, write.annotated.f, summary.data.f=NULL, raw.data.f=NULL) {
   if(is.null(summary.data.f)) {
     !is.null(raw.data.f) || stop(
       "At least one of summary SV data file or a reference file to generate a summary SV data file is required.")
     summary.data = make_reference_data(summary.data.f, write.summary)
   }
   else {
-    summary.data = fread(summary.data, colClasses = "character", 
+    summary.data = fread(summary.data.f, colClasses = "character", 
                          sep="\t", header = TRUE)
   }
 
   sv.data = as.data.table(read.csv(sv.data.f, sep="\t",
     header=T, colClasses = "character"))
-  sv.data = sv.data[,!c("DMPCount", "SplitReadAF")]
   cols.to.keep = c(names(sv.data), "DMPCount")
   sv.data = cbind(sv.data, intermediary_columns(sv.data))
-
   sv.data.intragenic = merge(
     sv.data[(EVENT=="INTRAGENIC")], 
     unique(setnames(summary.data[,!c("GENERAL_COUNT")], 
@@ -156,10 +154,12 @@ annotate_sv_count = function(
   sv.data[, "SplitReadAF" := round(
     as.numeric(TumorSplitVariantCount)/
       sum(as.numeric(TumorSplitVariantCount),
-          as.numeric(TumorSplitReferenceCount)), 5)]
+          as.numeric(TumorSplitReferenceCount)), 5),
+  by=1:NROW(sv.data)]
   
-  sv.data[!is.finite(DMPCount)]$DMPCount = 0
+  sv.data[is.na(DMPCount)]$DMPCount = "0"
   sv.data[!is.finite(SplitReadAF)]$SplitReadAF = 0
+  sv.data[, "SplitReadAF" := as.character(SplitReadAF)]
   
   Chromosomes = c(as.character(1:22), "X", "Y")
 
@@ -169,11 +169,12 @@ annotate_sv_count = function(
   sv.data = sv.data[order(TumorId, Chr1, as.numeric(Pos1),
                           Chr2, as.numeric(Pos2))]
   
-  write.table(sv.data, args.sv_output, sep = "\t", row.names = F,
+  write.table(sv.data, write.annotated.f, sep = "\t", row.names = F,
               col.names = T, quote = F, na = "")
 }
 
 if (!interactive()) {
+  parser = ArgumentParser()
   parser$add_argument('-a', '--annotate-file', type='character', default=NULL, help='file name of structural variants that needs to be annotated with occurrence count')
   parser$add_argument('-o', '--outfile', type='character', default=NULL,
                       help='Name of the output file. If none provided, the input file will be over-written')
@@ -181,10 +182,10 @@ if (!interactive()) {
                       help='Occurrence count data file')
   parser$add_argument('-r', '--raw-cohort-data', type='character', default=NULL,
                       help='raw cohort file that should be used to generate occurrence count data')
-  parser$add_argument('-g', '--generate-occ-count-data', action="store_true", default = TRUE,
+  parser$add_argument('-m', '--make-occ-count-data', action="store_true", default = FALSE,
                       help = 'Generate occurrence data. If false, annotate new data')
   
-  args=parser$parse_args()
+  args = parser$parse_args()
   
   annotate.f = args$annotate_file
   output.f = annotate.f
@@ -194,11 +195,11 @@ if (!interactive()) {
   occurrence.count.f = args$occurrence_count
   raw.cohort.data.f = args$raw_cohort_data
   
-  if(args$generate_occ_count_data) {
+  if(args$make_occ_count_data) {
     make_reference_data(raw.cohort.data.f, occurrence.count.f)
   }
   else {
-   annotate_sv_count(annotate.f, occurrence.count.f, raw.cohort.data.f)
+   annotate_sv_count(annotate.f, output.f, occurrence.count.f, raw.cohort.data.f)
   }
 }
   
