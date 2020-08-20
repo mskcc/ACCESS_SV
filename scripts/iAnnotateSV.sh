@@ -11,9 +11,9 @@ set -euo pipefail
 
 # Set default path
 BASEDIR=$(readlink -f "$0" | sed 's,/iAnnotateSV.sh,,g')
-SAMTOOLS=${$(command -v samtools):-}
-PYTHON=${$(command -v python):-}
-RSCRIPT=${$(command -v Rscript):-}
+SAMTOOLS=$(command -v samtools || echo "")
+PYTHON=$(command -v python || echo "")
+RSCRIPT=$(command -v Rscript || echo "")
 
 # checks
 if [ -z "$SAMTOOLS" ] || [ -z "$PYTHON" ]; then
@@ -23,7 +23,7 @@ fi
 
 # Assign required arguments to variables
 # overriding PYTHON with user provided path
-read -r vcf_gz prefix outdir mantadir fasta PYTHON <<< "{@:1:6}"
+read -r vcf_gz prefix outdir mantadir fasta PYTHON <<< "${@:1:6}"
 if [ -z "$vcf_gz" ] || [ -z "$prefix" ] || [ -z "$outdir" ] || \
 	[ -z "$mantadir" ] || [ -z "$fasta" ] || [ -z "$PYTHON" ]; then
     echo "One or more of the required arguments is missing."
