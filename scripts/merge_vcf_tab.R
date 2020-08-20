@@ -170,10 +170,30 @@ if (!interactive()) {
     #  2. At least one of the chromsome partner is an autosome or an allosome
     #  3. Non-translocation SVs should be of 500bp or longer in length
     vcf_data = vcf_data[
+      # filter 1
       (vcf_data$Gene1 %in% access_gene_list | vcf_data$Gene2 %in% access_gene_list) &
+      # filter 2
       !(vcf_data$Chr1 == 'MT' & vcf_data$Chr2 == 'MT') & 
+      # filter 3  
         (SV_Type == 'TRA' | 
            (!SV_Type == "TRA" & as.numeric(SV_LENGTH) >= 500)), ]
+
+    # For BND translocation, with identifical breakpoints, select 3'to5'
+    #  connection type to remove duplicates. If connection types are identical
+    #  between two variants, select the first. 
+    vcf_data[, c("sorted_bkp1", "sorted_bkp2") := list(
+	min(paste0(Chr1, ":", Pos1), paste0(Chr2, ":", Pos2)),
+	max(paste0(Chr1, ":", Pos1), paste0(Chr2, ":", Pos2))),
+    by=1:NROW(vcf_data)]
+    
+    filter_by_CT = vcf_data[, min(Connection_Type), on = .(Connection_Type), 
+	     by = .(SV_Type, sorted_bkp1, sorted_bkp2)]
+	     
+    vcf_data = unique(vcf_data[filter_by_CT,
+	   on = c(SV_Type = "SV_Type", sorted_bkp1 = "sorted_bkp1", 
+		  sorted_bkp2 = "sorted_bkp2", Connection_Type = "V1"), 
+	   nomatch = 0, mult = "first"])
+	     
     
     # Add dummy columns expected to be present in order 
     #  to use the same UI interface as IMPACT
