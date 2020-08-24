@@ -36,7 +36,7 @@ if (!interactive()) {
              ifelse(grepl('*.\\].*.\\]', ALT),'t]p]',
                     ifelse(grepl('\\].*.\\].*', ALT),']p]t',
                            ifelse(grepl('\\[.*.\\[.*', ALT),'[p[t', 'NA'))))),
-      by = 1:NROW(vcf_data)]
+      by = seq_len(NROW(vcf_data))]
     
     # infer 5'/3' connection type and mate.ID
     vcf_data[, c('CT', 'mate.ID') := list(
@@ -47,9 +47,8 @@ if (!interactive()) {
                            ifelse(grepl('INV3',INFO), '3to3', '5to5'),
                            # mapping of translocation event type
                            ifelse(EventType == 'BND', CT.vector[[BND_CT]], 'NA')))),
-      #'MATEID=|;','',str_extract(INFO,'MATEID=Manta...:[0-9:]+;')))
       gsub('MATEID=|;', '', sub(".*;(MATEID=Manta...:[0-9:]+);.*", "\\1", INFO))), 
-      by = 1:NROW(vcf_data)]
+      by = seq_len(NROW(vcf_data))]
     
     # merge data.table with itself on ID and mate.ID to match
     #  translocation partners
@@ -60,9 +59,9 @@ if (!interactive()) {
     vcf_data[, c("END", "CHR2") := list(
       ifelse(is.na(POS.mate), '', paste0('END=',POS.mate)),
       paste0('CHR2=', ifelse(is.na(`#CHROM.mate`), `#CHROM`, `#CHROM.mate`))),
-      by = 1:NROW(vcf_data)]
+      by = seq_len(NROW(vcf_data))]
     
-    vcf_data[, INFO := paste0(INFO,';CT=',CT,';',CHR2,';',END), by = 1:NROW(vcf_data)]
+    vcf_data[, INFO := paste0(INFO,';CT=',CT,';',CHR2,';',END), by = seq_len(NROW(vcf_data))]
     
     # Select for valid Chromosomes
     Chromosomes = c(as.character(1:22), "X", "Y", "MT")

@@ -59,7 +59,7 @@ intermediary_columns = function(sv.dt) {
   sv.dt = check_columns(sv.dt)
   sv.dt[, "EVENT" := ifelse(
     grepl("protein fusion", tolower(EventInfo)), "FUSION", ifelse(
-      Gene1 == Gene2, "INTRAGENIC", "INTERGENIC")), by=1:NROW(sv.dt)]
+      Gene1 == Gene2, "INTRAGENIC", "INTERGENIC")), by=seq_len(NROW(sv.dt))]
   
   sv.dt[, c("GENE1", "GENE2", "SV_GENES") := list(
     ifelse(grepl("TRA", EventType), Gene2, Gene1),
@@ -70,14 +70,14 @@ intermediary_columns = function(sv.dt) {
                   ifelse(grepl("TRA", EventType), 
                          paste0(Gene2, "-", Gene1),
                          paste0(Gene1, "-", Gene2))))),
-    by=1:NROW(sv.dt)]
+    by=seq_len(NROW(sv.dt))]
   
   sv.dt[, c("BKP1", "BKP2") := list(
     ifelse(grepl("TRA", EventType), 
            resolve_breakpoint(Gene2desc), resolve_breakpoint(Gene1desc)), 
     ifelse(grepl("TRA", EventType),
            resolve_breakpoint(Gene1desc), resolve_breakpoint(Gene2desc))),
-    by=1:NROW(sv.dt)]
+    by=seq_len(NROW(sv.dt))]
   return(sv.dt[,c("EVENT", "GENE1", "GENE2", "SV_GENES", "BKP1", "BKP2")])
 }
   
@@ -155,7 +155,7 @@ annotate_sv_count = function(
     as.numeric(TumorSplitVariantCount)/
       sum(as.numeric(TumorSplitVariantCount),
           as.numeric(TumorSplitReferenceCount)), 5),
-  by=1:NROW(sv.data)]
+  by=seq_len(NROW(sv.data))]
   
   sv.data[is.na(DMPCount)]$DMPCount = "0"
   sv.data[!is.finite(SplitReadAF)]$SplitReadAF = 0

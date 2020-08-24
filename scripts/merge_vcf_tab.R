@@ -118,7 +118,7 @@ if (!interactive()) {
         ifelse(grepl('IMPRECISE', INFO), 'IMPRECISE',
         # else, set as precise only if split read support is present
                ifelse(grepl('SR', FORMAT), 'PRECISE', 'IMPRECISE'))),
-      by = 1:NROW(vcf_data)]
+      by = seq_len(NROW(vcf_data))]
     
     # Drop the info column
     vcf_data = vcf_data[, !"INFO"]
@@ -163,12 +163,13 @@ if (!interactive()) {
                           as.numeric(NormalReferenceCount),
                           as.numeric(NormalSplitReferenceCount), na.rm = T)),
                     ifelse(Gene1 %in% sig_gene_list | Gene2 %in% sig_gene_list, "KeyGene", "-")), 
-              by = 1:NROW(vcf_data)]
+              by = seq_len(NROW(vcf_data))]
     
     # Filter final variants
     #  1. At least one of the gene partner is in ACCESS gene panel
     #  2. At least one of the chromsome partner is an autosome or an allosome
     #  3. Non-translocation SVs should be of 500bp or longer in length
+    #if (!vcf_data == null
     vcf_data = vcf_data[
       # filter 1
       (vcf_data$Gene1 %in% access_gene_list | vcf_data$Gene2 %in% access_gene_list) &
@@ -177,16 +178,17 @@ if (!interactive()) {
       # filter 3  
         (SV_Type == 'TRA' | 
            (!SV_Type == "TRA" & as.numeric(SV_LENGTH) >= 500)), ]
-
+    
     # For BND translocation, with identifical breakpoints, select 3'to5'
     #  connection type to remove duplicates. If connection types are identical
     #  between two variants, select the first. 
     vcf_data[, c("sorted_bkp1", "sorted_bkp2") := list(
 	min(paste0(Chr1, ":", Pos1), paste0(Chr2, ":", Pos2)),
 	max(paste0(Chr1, ":", Pos1), paste0(Chr2, ":", Pos2))),
-    by=1:NROW(vcf_data)]
-    
-    filter_by_CT = vcf_data[, min(Connection_Type), on = .(Connection_Type), 
+    by=seq_len(NROW(vcf_data))]
+    #by=eval(row.names(vcf_data))]
+
+    filter_by_CT = vcf_data[, min(Connection_Type), 
 	     by = .(SV_Type, sorted_bkp1, sorted_bkp2)]
 	     
     vcf_data = unique(vcf_data[filter_by_CT,
