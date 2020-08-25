@@ -5,6 +5,22 @@ suppressPackageStartupMessages({
   library(argparse)
 })
 
+# Constants
+final_colnames = c(
+  "TumorId", "NormalId", "Chr1", "Pos1", "Chr2", "Pos2", "SV_Type",
+  "Gene1", "Gene2",  "Transcript1", "Transcript2", "Site1Description",
+  "Site2Description", "Fusion",  "ProbabilityScore", "Confidence",
+  "Comments", "Connection_Type", "SV_LENGTH", "MAPQ",  "PairEndReadSupport",
+  "SplitReadSupport", "BrkptType", "ConsensusSequence",  "TumorReferenceCount",
+  "TumorSplitReferenceCount", "TumorVariantCount",  "TumorSplitVariantCount",
+  "TumorReadCount", "TumorGenotypeQScore", "NormalReferenceCount",
+  "NormalSplitReferenceCount", "NormalVariantCount", "NormalSplitVariantCount",
+  "NormalReadCount", "NormalGenotypeQScore", "Cosmic_Fusion_Counts",
+  "repName-repClass-repFamily:-site1", "repName-repClass-repFamily:-site2",
+  "CC_Chr_Band", "CC_Tumour_Types(Somatic)", "CC_Cancer_Syndrome", "CC_Mutation_Type",
+  "CC_Translocation_Partner", "DGv_Name-DGv_VarType-site1",
+  "DGv_Name-DGv_VarType-site2",  "Significance", "DMPCount", "SplitReadAF")
+
 # Helper functions
 resolve_breakpoint = function(x) {
   #' resolve_breakpoint takes a description of a breakpoint of an SV annotated by iAnnotateSV and extracts the region information
@@ -130,27 +146,33 @@ annotate_sv_count = function(
     header=T, colClasses = "character"))
   cols.to.keep = c(names(sv.data), "DMPCount")
   sv.data = cbind(sv.data, intermediary_columns(sv.data))
-  sv.data.intragenic = merge(
-    sv.data[(EVENT=="INTRAGENIC")], 
-    unique(setnames(summary.data[,!c("GENERAL_COUNT")], 
-                    "SPECIFIC_COUNT", "DMPCount")),
-    by.x = c("GENE1", "GENE2", "SV_GENES", "BKP1", "BKP2"),
-    by.y = c("GENE1", "GENE2", "SV_GENES", "BKP1", "BKP2"),
-    all.x = T, no.dups = F)
-  
-  sv.data.rest = merge(
-    sv.data[!(EVENT=="INTRAGENIC")], 
-    unique(setnames(summary.data[, c(
-      "GENE1", "GENE2", "SV_GENES", "GENERAL_COUNT")],
-      "GENERAL_COUNT", "DMPCount")),
-    by.x = c("GENE1", "GENE2", "SV_GENES"),
-    by.y = c("GENE1", "GENE2", "SV_GENES"),
-    all.x = T, no.dups = F)
+  if (nrow(sv.data) > 0) {
+    sv.data.intragenic = merge(
+      sv.data[(EVENT=="INTRAGENIC")], 
+      unique(setnames(summary.data[,!c("GENERAL_COUNT")], 
+                      "SPECIFIC_COUNT", "DMPCount")),
+      by.x = c("GENE1", "GENE2", "SV_GENES", "BKP1", "BKP2"),
+      by.y = c("GENE1", "GENE2", "SV_GENES", "BKP1", "BKP2"),
+      all.x = T, no.dups = F)
     
-  sv.data = rbind(
-    sv.data.intragenic[,..cols.to.keep],
-    sv.data.rest[,..cols.to.keep])
-  
+    sv.data.rest = merge(
+      sv.data[!(EVENT=="INTRAGENIC")], 
+      unique(setnames(summary.data[, c(
+        "GENE1", "GENE2", "SV_GENES", "GENERAL_COUNT")],
+        "GENERAL_COUNT", "DMPCount")),
+      by.x = c("GENE1", "GENE2", "SV_GENES"),
+      by.y = c("GENE1", "GENE2", "SV_GENES"),
+      all.x = T, no.dups = F)
+      
+    sv.data = rbind(
+      sv.data.intragenic[,..cols.to.keep],
+      sv.data.rest[,..cols.to.keep])
+  }
+  else {
+    sv.data[, "DMPCount" :=character()]
+    sv.data = sv.data[,..cols.to.keep]
+  }
+
   sv.data[, "SplitReadAF" := round(
     as.numeric(TumorSplitVariantCount)/
       sum(as.numeric(TumorSplitVariantCount),
@@ -169,6 +191,8 @@ annotate_sv_count = function(
   sv.data = sv.data[order(TumorId, Chr1, as.numeric(Pos1),
                           Chr2, as.numeric(Pos2))]
   
+  # Rename columns and write table to file
+  setnames(sv.data, old = names(sv.data), new = final_colnames)
   write.table(sv.data, write.annotated.f, sep = "\t", row.names = F,
               col.names = T, quote = F, na = "")
 }
