@@ -23,7 +23,7 @@ if (!interactive()) {
   if (length(vcf_main) > 0) {
     vcf_data = as.data.table(tstrsplit(vcf_main, "\t", fixed=T))
     names(vcf_data) = strsplit(last(vcf_meta), "\t", fixed = T)[[1]]
-    
+    columns_to_keep_in_final_vcf = strsplit(last(vcf_meta), "\t", fixed = T)[[1]]
     # vector mapping 5'/3' connection type to mantas output
     CT.vector = structure(c('5to3','3to3','3to5','5to5'),
                           names = c('t[p[','t]p]',']p]t','[p[t'))
@@ -68,16 +68,7 @@ if (!interactive()) {
     vcf_data = vcf_data[which(vcf_data$`#CHROM` %in% Chromosomes),]
     
     # Select vcf columns
-    genotype_columns_to_keep = grep(
-      paste(c(".mate$", "mate.ID", "EventType", 
-              "BND_CT", "CT", "END", "CHR2", "ID", 
-              "#CHROM", "POS", "REF", "ALT", "QUAL", 
-              "FILTER", "INFO", "FORMAT"), collapse = "|"), 
-      names(vcf_data), value = T, invert = T)
-    columns_to_keep = c(
-      "#CHROM", "POS", "ID", "REF", "ALT", "QUAL", 
-      "FILTER", "INFO", "FORMAT", genotype_columns_to_keep)
-    vcf_data = vcf_data[, ..columns_to_keep]
+    vcf_data = vcf_data[, ..columns_to_keep_in_final_vcf]
     
     # Reorder rows
     vcf_data$`#CHROM` = factor(vcf_data$`#CHROM`, levels=Chromosomes)
