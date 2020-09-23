@@ -46,9 +46,9 @@ resolve_breakpoint = function(x) {
 }
 
 check_columns = function(sv.dt) {
-  #' resolve_breakpoint takes a description of a breakpoint of an SV annotated by iAnnotateSV and extracts the region information
-  #' @param x (character) iAnnotateSV description of a breakpoint
-  #' @return region information of the breakpoint. Example, exon 7, intro 5, 5-UTR
+  #' check and add expected column names in intermediary vcf if necessary
+  #' @param sv.dt (data.table) intermediary data table of vcf data
+  #' @return vcf data table with expected column names
   #' 
   sv.dt = tryCatch({
     return(sv.dt[, c("EventInfo", "Gene1", "Gene2", 
@@ -69,9 +69,10 @@ check_columns = function(sv.dt) {
 }
 
 intermediary_columns = function(sv.dt) {
-  #' resolve_breakpoint takes a description of a breakpoint of an SV annotated by iAnnotateSV and extracts the region information
-  #' @param x (character) iAnnotateSV description of a breakpoint
-  #' @return region information of the breakpoint. Example, exon 7, intro 5, 5-UTR
+  #' add intermediary columns to vcf data table to describe the genes, breakpoints, and rearrangement genes
+  #' @param sv.dt (data.table) intermediary data table of vcf data
+  #' @return data table of vcf data with newly added columns
+
   sv.dt = check_columns(sv.dt)
   sv.dt[, "EVENT" := ifelse(
     grepl("protein fusion", tolower(EventInfo)), "FUSION", ifelse(
@@ -102,6 +103,11 @@ intermediary_columns = function(sv.dt) {
 
 make_reference_data = function(
   CohortSVs.f, write.summary=NULL) {
+  #' generate summary reference data table of rearrangements and their occurrence
+  #' @param CohortSVs.f (character) path to file of reference data
+  #' @param write.summary (character) write summary reference data to this file
+  #' @return summary reference data table
+
   if(is.null(raw.cohort.data.f)) {
     stop("Required raw.cohort.data.f argument not defined.")
   }
@@ -132,6 +138,13 @@ make_reference_data = function(
 
 annotate_sv_count = function(
   sv.data.f, write.annotated.f, summary.data.f=NULL, raw.data.f=NULL) {
+  #' annotate a file of SVs with occurrence count where applicable
+  #' @param sv.data.f (character) path to file of sv data to be annotated
+  #' @param write.annotated.f (character) write annotated sv data to this file
+  #' @param summary.data.f (character) path to file summary reference data that contains the occurrence count
+  #' @param raw.data.f (character) if summary.data.f cannot be provided, a raw reference file can be provided instead. This file will be processed to generate summary reference data with occurrence
+  #' @return
+
   if(is.null(summary.data.f)) {
     !is.null(raw.data.f) || stop(
       "At least one of summary SV data file or a reference file to generate a summary SV data file is required.")
