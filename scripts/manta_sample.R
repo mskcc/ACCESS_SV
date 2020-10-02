@@ -1,10 +1,6 @@
 # Executable -----------------------------------------------------------------------------------------------------------
 suppressPackageStartupMessages({
-  library(data.table)
   library(argparse)
-  library(stringr)
-  library(vcfR)
-  library(dplyr)
 })
 
 if (!interactive()) {
