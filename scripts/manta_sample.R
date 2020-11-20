@@ -20,12 +20,12 @@ if (!interactive()) {
   manta.dir = args$manta
   
   system(paste0(
-    manta.dir,'/bin/configManta.py --normalBam ',
+    'python2 ',manta.dir,'/bin/configManta.py --normalBam ',
     normal_path ,' --tumorBam ',tumor_path,
     ' --runDir ',out.dir,' --exome ',
     '--referenceFasta ',fasta
   ))
   system(paste0(
-    'python ',out.dir,'/runWorkflow.py -m local -j 8'
+    'python2 ',out.dir,'/runWorkflow.py -m local -j 8'
   ))
 }
