@@ -75,7 +75,6 @@ get_PR.SR_depth = function(samples, data, PRcols=2, SRcols=2) {
   }
   return(l)}
 
-
 if (!interactive()) {
   parser=ArgumentParser()
   parser$add_argument('-t', '--tab', type='character', help='file name of tab file to be annotated')
@@ -127,6 +126,8 @@ if (!interactive()) {
     normal_ID = colnames(vcf_data)[9]
     tumor_ID = colnames(vcf_data)[10]
     
+    # When split reads are missing, auto-fill with "0,0" for "Ref,Alt"
+    vcf_data[, 9:10 := lapply(.SD, function(x) ifelse(grepl("\\:", x), x, paste0(x, ":0,0"))), .SDcols = 9:10]
     # Parse and extract pairedend and split read info
     vcf_data[, c(
       "PairedEndRef.tumor", "PairedEndSupport.tumor", 
